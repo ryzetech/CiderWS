@@ -21,10 +21,9 @@ class CiderWS {
    * @param {string} host The host to connect to (default: localhost)
    * @param {number} port The port to connect to (default: 26369)
    */
-  constructor(host = "localhost", port = 26369, autoReconnect = true) {
+  constructor(host = "localhost", port = 26369) {
     this.host = host;
     this.port = port;
-    this.autoReconnect = autoReconnect;
     this.currentSong = new Song({
       data: {
         name: "No Title Found",
