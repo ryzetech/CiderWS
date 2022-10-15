@@ -15,7 +15,87 @@ Cider has a WebSocket API. Yes, I wouldn't have thought either! But, unlike the 
 soon tm
 
 # Documentation
-soon tm
+## Methods
+### `connect()`
+This one is easy. You don't even have to call it because it gets called in the constructor anyways (the call gets ignored if a connection is already established). If you have closed it with the [`close()`](#close) function, you may want to reopen it. That's why this method exists.
+
+### `close()`
+That closes the websocket connection. You should do that at some point to provite a clean exit.
+
+### `async getSong()`
+Returns a Promise, which eventually resolves to a `Song` object of the current or last played song. Useful if you don't want to use the event-based system.
+
+### `async getStates()`
+Returns a Promise, which eventually resolves to a `States` object of the current or last states. Useful if you don't want to use the event-based system.
+
+### `play()`, `pause()`, `next()`, `previous()`
+Pretty self-explanatory. You can influence the playback behaviour with those functions. They aren't Promise-based so you don't have to wait for shit. They essentially just do websocket calls.
+
+### `seek(time, adjust)`
+This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.
+TODO: Add error handling
+
+### `setVolume(volume)`
+This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.
+TODO: Add error handling
+
+### `cycleRepeat()`
+This function lets you cycle through the repeat modes (0 = no repeat, 1 = song, 2 = playlist).  
+TODO: Add a function to set the repeat mode directly
+
+### `toggleShuffle()`
+Toggles the shuffle mode on or off. To set the shuffle mode directly, check [`setShuffle()`](#setshuffleenabled).
+
+### `setShuffle(enabled)`
+Sets the shuffle mode to the boolean given to `enabled`.
+TODO: Add error handling
+
+### `async getLyrics()`
+Returns the lyrics of the current song as a `string` if there are any. You get a nice text block with all lines.
+
+### `async getLyricsAdvanced()`
+TODO: Write something interesting
+
+## Events
+Cider bombards every connected websocket with playback data, which CiderWS filters for you.  
+The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `connectionOpen` and `connectionClose`. So far, so simple.  
+Listen for events with the structure you would expect:
+```js
+const { CiderWS } = require("./ciderws.js"); // note: npm rollout soon™
+const cider = new CiderWS();
+
+cider.on("songUpdate", (data) => {
+  // do shit
+});
+```
+Additionally, I'm also "forwarding" all messages Cider sends, just in case you want the raw data. The type of the message on the websocket is also the event to listen for, for example `generic` or `playbackStateUpdate` (I don't know why you would want to do that tho).  
+
+## Classes
+### Song
+The Song class packs up some nice information about the current playing title.
+| Property    | Type   | Usage                                |
+|-------------|--------|--------------------------------------|
+| id          | string | The song ID                          |
+| title       | string | The song name                        |
+| artist      | string | The song artist                      |
+| album       | string | The song album                       |
+| artwork     | string | The song's album art URL             |
+| trackNumber | number | The song's track number on the album |
+| duration    | number | The song duration in seconds         |
+| url         | string | The Apple Music URL for the song     |
+
+### States
+This class saves the current options and states for the player when defined by the client.
+| Property    | Type    | Usage                                |
+|-------------|---------|--------------------------------------|
+| isPlaying   | boolean | Is a title playing?                  |
+| isShuffling | boolean | Is shuffling enabled?                |
+| repeatMode  | number  | Current repeat mode (0 = no repeat, 1 = song, 2 = playlist) |
+| volume      | number  | How loud is the player (from 0 to 1) |
+| autoplay    | boolean | Is autoplay enabled?                 |
+
+### PlaybackData
+TODO: Write. I'm tired.
 
 ### Disclaimer
 *This project is NOT affiliated with Cider in any way shape or form (yet). The project is open source and free to use. 
