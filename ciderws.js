@@ -41,7 +41,7 @@ class CiderWS {
         trackNumber: undefined
       }
     });
-    this.options;
+    this.states;
     this.socket;
     this.connect();
   }
@@ -60,14 +60,14 @@ class CiderWS {
 
       case "playbackStateUpdate":
         let newSong = new Song(d);
-        let newOpt = new Options(d);
+        let newStat = new States(d);
         if (this.currentSong == undefined || this.currentSong.id != newSong.id) {
           this.currentSong = newSong;
           if (newSong.duration > 0) evem.emit("songUpdate", newSong);
         }
-        if (JSON.stringify(this.options) != JSON.stringify(newOpt)) {
-          this.options = newOpt;
-          evem.emit("optionsUpdate", newOpt);
+        if (JSON.stringify(this.states) != JSON.stringify(newStat)) {
+          this.states = newStat;
+          evem.emit("statesUpdate", newStat);
         }
         break;
     }
@@ -332,7 +332,7 @@ class Song {
  * @var {number} volume The volume of the player (0-1)
  * @var {boolean} autoplay Whether autoplay is enabled or not
  */
-class Options {
+class States {
   constructor(data) {
     data = data.data;
     this.isPlaying = data.status;
