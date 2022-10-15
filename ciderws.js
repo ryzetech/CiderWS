@@ -75,9 +75,6 @@ class CiderWS {
     }
   }
 
-  /**
-   * @private
-   */
   connect() {
     if (!this.socket || this.socket.readyState == 3) {
       this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
