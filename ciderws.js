@@ -79,6 +79,8 @@ class CiderWS {
     if (!this.socket || this.socket.readyState == 3) {
       this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
 
+      this.socket.onopen = (event) => { evem.emit("connectionOpen", event); };
+      this.socket.onclose = (event) => { evem.emit("connectionClose"), event; };
       this.socket.onmessage = (event) => { this.handleMessage(event); };
     }
   }
@@ -136,11 +138,11 @@ class CiderWS {
   }
 
   /**
-   * Gets the current options
+   * Gets the current states
    * @async
-   * @returns {States} The current options
+   * @returns {States} The current states
    */
-  async getOptions() {
+  async getStates() {
     return new Promise(resolve => {
       if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
@@ -201,7 +203,7 @@ class CiderWS {
    * @param {number} time The time to skip to, in seconds
    * @param {boolean} adjust If true, the time will be accepted in milliseconds
    */
-  seek(time, adjust) {
+  seek(time, adjust = false) {
     if (adjust) {
       time = parseInt(time / 1000);
     }
@@ -235,7 +237,7 @@ class CiderWS {
    * Toggles shuffle mode
    * @see {@link setShuffle()} if you want to set shuffle mode to a specific value
    */
-  shuffle() {
+  toggleShuffle() {
     this.socket.send(JSON.stringify({
       action: 'shuffle',
     }));
@@ -243,12 +245,12 @@ class CiderWS {
 
   /**
    * Sets shuffle mode
-   * @param {boolean} val Sets whether shuffle mode is enabled or not
+   * @param {boolean} enabled Sets whether shuffle mode is enabled or not
    */
-  setShuffle(val) {
+  setShuffle(enabled) {
     this.socket.send(JSON.stringify({
       action: 'set-shuffle',
-      shuffle: val ? 1 : 0,
+      shuffle: enabled ? 1 : 0,
     }));
   }
 
@@ -326,7 +328,7 @@ class Song {
  * @param {Object} data The data from the websocket
  * 
  * @var {boolean} isPlaying Whether the player is playing or not
- * @var {boolean} shuffle Whether the player is shuffling or not
+ * @var {boolean} isShuffling Whether the player is shuffling or not
  * @var {number} repeatMode The repeat mode of the player (0 = off, 1 = song, 2 = queue)
  * @var {number} volume The volume of the player (0-1)
  * @var {boolean} autoplay Whether autoplay is enabled or not
@@ -335,7 +337,7 @@ class States {
   constructor(data) {
     data = data.data;
     this.isPlaying = data.status;
-    this.shuffle = data.shuffleMode == 1;
+    this.isShuffling = data.shuffleMode == 1;
     this.repeatMode = data.repeatMode;
     this.volume = data.volume;
     this.autoplay = data.autoplayEnabled;
