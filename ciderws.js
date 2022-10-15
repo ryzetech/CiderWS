@@ -50,7 +50,7 @@ class CiderWS {
    */
   handleMessage(event) {
     let d = JSON.parse(event.data);
-    evem.emit(d.type, d.data);
+    evem.emit(d.type, d);
 
     switch (d.type) {
       default:
@@ -68,6 +68,9 @@ class CiderWS {
           this.states = newStat;
           evem.emit("statesUpdate", newStat);
         }
+        evem.emit("playbackUpdate", new PlaybackData(d));
+        newSong = undefined;
+        newStat = undefined;
         break;
     }
   }
@@ -138,15 +141,15 @@ class CiderWS {
   /**
    * Gets the current options
    * @async
-   * @returns {Options} The current options
+   * @returns {States} The current options
    */
-   async getOptions() {
+  async getOptions() {
     return new Promise(resolve => {
-      if (this.options) return resolve(this.options);
+      if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
-        if (!this.options) return;
+        if (!this.states) return;
         clearInterval(interval);
-        resolve(this.options);
+        resolve(this.states);
       }, 10);
     });
   }
@@ -320,9 +323,9 @@ class Song {
 }
 
 /**
- * This class saves the current options for the player when defined by the client.
+ * This class saves the current options and states for the player when defined by the client.
  * 
- * @class Options
+ * @class States
  * @param {Object} data The data from the websocket
  * 
  * @var {boolean} isPlaying Whether the player is playing or not
@@ -342,4 +345,29 @@ class States {
   }
 }
 
-module.exports = { CiderWS, Song, Options };
+/**
+ * This class shows data relevant for the current playback, e.g. elapsed time, remaining time, when the song will end, etc.
+ * 
+ * @class PlaybackData
+ * @param {Object} data The data from the websocket
+ * 
+ * @var {boolean} isPlaying Whether the player is playing or not
+ * @var {number} startTime The timestamp at which the song started playing
+ * @var {number} endTime The timestamp at which the song will end
+ * @var {number} remainingTime The remaining time in milliseconds
+ * @var {number} elapsedTime The elapsed time in milliseconds
+ * @var {number} progress The progress of the song in decimal form (0-1)
+ */
+class PlaybackData {
+  constructor(data) {
+    data = data.data;
+    this.isPlaying = data.status;
+    this.startTime = data.startTime;
+    this.endTime = data.endTime;
+    this.remainingTime = Math.round(data.remainingTime);
+    this.elapsedTime = Math.round(data.durationInMillis - data.remainingTime);
+    this.progress = data.currentPlaybackProgress;
+  }
+}
+
+module.exports = { CiderWS };
