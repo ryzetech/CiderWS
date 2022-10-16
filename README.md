@@ -23,20 +23,20 @@ This one is easy. You don't even have to call it because it gets called in the c
 That closes the websocket connection. You should do that at some point to provite a clean exit.
 
 ### `async getSong()`
-Returns a Promise, which eventually resolves to a `Song` object of the current or last played song. Useful if you don't want to use the event-based system.
+Returns a Promise, which eventually resolves to a [`Song`](#song) object of the current or last played song. Useful if you don't want to use the event-based system.
 
 ### `async getStates()`
-Returns a Promise, which eventually resolves to a `States` object of the current or last states. Useful if you don't want to use the event-based system.
+Returns a Promise, which eventually resolves to a [`States`](#states) object of the current or last states. Useful if you don't want to use the event-based system.
 
 ### `play()`, `pause()`, `next()`, `previous()`
 Pretty self-explanatory. You can influence the playback behaviour with those functions. They aren't Promise-based so you don't have to wait for shit. They essentially just do websocket calls.
 
 ### `seek(time, adjust)`
-This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.
+This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.  
 TODO: Add error handling
 
 ### `setVolume(volume)`
-This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.
+This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.  
 TODO: Add error handling
 
 ### `cycleRepeat()`
@@ -47,18 +47,57 @@ TODO: Add a function to set the repeat mode directly
 Toggles the shuffle mode on or off. To set the shuffle mode directly, check [`setShuffle()`](#setshuffleenabled).
 
 ### `setShuffle(enabled)`
-Sets the shuffle mode to the boolean given to `enabled`.
+Sets the shuffle mode to the boolean given to `enabled`.  
 TODO: Add error handling
 
 ### `async getLyrics()`
-Returns the lyrics of the current song as a `string` if there are any. You get a nice text block with all lines.
+Returns the lyrics of the current song as a `string` if there are any. You get a nice text block with all lines. **Note:** This could return an empty string when there are no lyrics.
 
 ### `async getLyricsAdvanced()`
-TODO: Write something interesting
+Returns the lyrics as an array of objects with the following properties:
+| Property    | Type   | Usage                                |
+|-------------|--------|--------------------------------------|
+| startTime   | number | Marks the time in seconds where this line is played |
+| endTime     | number | Marks the time in seconds where this line stops |
+| line        | string | The actual lyric line. duh           |
+| translation | string | The translation of the line if chosen in the Cider options |
+
+Example:
+```json
+[
+  ...
+  {
+    startTime: 44.3,
+    endTime: 46.1,
+    line: 'Never gonna give you up',
+    translation: ''
+  },
+  {
+    startTime: 46.1,
+    endTime: 48.5,
+    line: 'Never gonna let you down',
+    translation: ''
+  },
+  {
+    startTime: 48.5,
+    endTime: 52.3,
+    line: 'Never gonna run around and desert you',
+    translation: ''
+  },
+  ...
+]
+```
+**Note:** This could also return an empty array when there are no lyrics.
+
 
 ## Events
 Cider bombards every connected websocket with playback data, which CiderWS filters for you.  
-The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `connectionOpen` and `connectionClose`. So far, so simple.  
+The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `connectionOpen` and `connectionClose`. You get some data with them, too!
+- `songUpdate` = = => [`Song`](#song) object
+- `statesUpdate` = => [`States`](#states) object
+- `playbackUpdate` => [`PlaybackData`](#playbackdata) object
+
+So far, so simple.  
 Listen for events with the structure you would expect:
 ```js
 const { CiderWS } = require("./ciderws.js"); // note: npm rollout soon™
@@ -95,8 +134,16 @@ This class saves the current options and states for the player when defined by t
 | autoplay    | boolean | Is autoplay enabled?                 |
 
 ### PlaybackData
-TODO: Write. I'm tired.
+This class shows data relevant for the current playback, e.g. elapsed time, remaining time, the timestamp when the song will end, etc.
+| Property      | Type    | Usage                                |
+|---------------|---------|--------------------------------------|
+| isPlaying     | boolean | Is a title playing?                  |
+| startTime     | number  | The timestamp at which the song started playing |
+| endTime       | number  | The timestamp at which the song will end |
+| remainingTime | number  | The remaining time in milliseconds   |
+| elapsedTime   | number  | The elapsed time in milliseconds     |
+| progress      | number  | The progress of the song in decimal form (0-1) |
 
-### Disclaimer
+# Disclaimer
 *This project is NOT affiliated with Cider in any way shape or form (yet). The project is open source and free to use. 
 For any legal concerns contact me at <a href="mailto:legal@ryzetech.live">legal@ryzetech.live</a>.*
