@@ -9,7 +9,10 @@
 
 
 # About
-Cider has a WebSocket API. Yes, I wouldn't have thought either! But, unlike the REST API, calling it "documentated" would be a blunt lie because documentation... doesn't exist. No worries tho! I had the absolute boredom to do some digging in the JavaScript code for the Web Remote and here we are. I just wrote this as a part of a cool VS Code extension... Oh well...
+Cider [(cider.sh - an open-source client for Apple Music)](https://cider.sh/) has a WebSocket API. Yes, I wouldn't have thought either! But, unlike the REST API, calling it "documentated" would be a blunt lie because documentation... doesn't exist. No worries tho! I had the absolute boredom to do some digging in the JavaScript code for the Web Remote and here we are. I just wrote this as a part of a cool VS Code extension... Oh well...
+
+### A thing to note
+This will be my first ever npm package. Please don't be mad at me when I made mistakes, didn't work efficiently or overlooked flaws. Just be patient, create an issue or even open a merge request with your fix! I will gladly take every help I can get! :D
 
 # Installation
 soon tm
@@ -144,3 +147,6 @@ This class shows data relevant for the current playback, e.g. elapsed time, rema
 # Disclaimer
 *This project is NOT affiliated with Cider in any way shape or form (yet). The project is open source and free to use. 
 For any legal concerns contact me at <a href="mailto:legal@ryzetech.live">legal@ryzetech.live</a>.*
+
+# Thanks ❤
+Thank you @SteffTek for providing me with a base to work with, @ArcticSpaceFox for giving me advice and energy to do this, and @FoxInAScarf for listening to my rants.
