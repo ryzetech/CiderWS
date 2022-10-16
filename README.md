@@ -149,4 +149,4 @@ This class shows data relevant for the current playback, e.g. elapsed time, rema
 For any legal concerns contact me at <a href="mailto:legal@ryzetech.live">legal@ryzetech.live</a>.*
 
 # Thanks ❤
-Thank you @SteffTek for providing me with a base to work with, @ArcticSpaceFox for giving me advice and energy to do this, and @FoxInAScarf for listening to my rants.
+Thank you [@SteffTek](https://github.com/SteffTek) for providing me with a base to work with, [@ArcticSpaceFox](https://github.com/ArcticSpaceFox) for giving me advice and energy to do this, and [@FoxInAScarf](https://github.com/FoxInAScarf) for listening to my rants.
