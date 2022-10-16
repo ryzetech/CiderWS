@@ -65,26 +65,26 @@ Returns the lyrics as an array of objects with the following properties:
 Example:
 ```json
 [
-  ...
+  "..."
   {
-    startTime: 44.3,
-    endTime: 46.1,
-    line: 'Never gonna give you up',
-    translation: ''
+    "startTime": 44.3,
+    "endTime": 46.1,
+    "line": "Never gonna give you up",
+    "translation": ""
   },
   {
-    startTime: 46.1,
-    endTime: 48.5,
-    line: 'Never gonna let you down',
-    translation: ''
+    "startTime": 46.1,
+    "endTime": 48.5,
+    "line": "Never gonna let you down",
+    "translation": ""
   },
   {
-    startTime: 48.5,
-    endTime: 52.3,
-    line: 'Never gonna run around and desert you',
-    translation: ''
+    "startTime": 48.5,
+    "endTime": 52.3,
+    "line": "Never gonna run around and desert you",
+    "translation": ""
   },
-  ...
+  "..."
 ]
 ```
 **Note:** This could also return an empty array when there are no lyrics.
