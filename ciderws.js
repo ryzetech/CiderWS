@@ -269,7 +269,7 @@ class CiderWS {
     }));
     return new Promise((resolve, reject) => {
       evem.once("lyrics", (data) => {
-        resolve(data);
+        resolve(data.data);
       });
     });
   }
@@ -283,8 +283,9 @@ class CiderWS {
     let lyrics = await this.getLyricsAdvanced();
     let full = "";
     for (let l of lyrics) {
-      if (l.line.startsWith("lrc") || l.line === " ") continue;
-      full += l.line + "\n";
+      let line = l.line.trim();
+      if (line.startsWith("lrc") || line === "") continue;
+      full += line + "\n";
     }
     return full;
   }
