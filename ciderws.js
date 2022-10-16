@@ -204,6 +204,9 @@ class CiderWS {
    * @param {boolean} adjust If true, the time will be accepted in milliseconds
    */
   seek(time, adjust = false) {
+    if (!time) throw new MissingParameterError("time");
+    if (!parseFloat(time)) throw new ParameterTypeMismatchError("time", "float");
+
     if (adjust) {
       time = parseInt(time / 1000);
     }
@@ -218,6 +221,11 @@ class CiderWS {
    * @param {number} volume The volume to set, from 0 to 1
    */
   setVolume(volume) {
+    if (!volume) throw new MissingParameterError("volume");
+    volume = parseFloat(volume);
+    if (!volume) throw new ParameterTypeMismatchError("volume", "float");
+    if (volume < 0 || volume > 1) throw new ParameterRangeError("volume", 0, 1);
+
     this.socket.send(JSON.stringify({
       type: "setVolume",
       data: volume,
@@ -248,6 +256,8 @@ class CiderWS {
    * @param {boolean} enabled Sets whether shuffle mode is enabled or not
    */
   setShuffle(enabled) {
+    if (typeof(enabled) === "undefined") throw new MissingParameterError("enabled");
+
     this.socket.send(JSON.stringify({
       action: 'set-shuffle',
       shuffle: enabled ? 1 : 0,
@@ -367,6 +377,24 @@ class PlaybackData {
     this.remainingTime = Math.round(data.remainingTime);
     this.elapsedTime = Math.round(data.durationInMillis - data.remainingTime);
     this.progress = data.currentPlaybackProgress;
+  }
+}
+
+class MissingParameterError extends Error {
+  constructor(arg) {
+    super(`Missing parameter(s): ${arg}`);
+  }
+}
+
+class ParameterRangeError extends Error {
+  constructor(arg, min, max) {
+    super(`Parameter "${arg}" must be between ${min} and ${max}`);
+  }
+}
+
+class ParameterTypeMismatchError extends Error {
+  constructor(arg, type) {
+    super(`Invalid parameter(s): ${arg} (expected ${type})`);
   }
 }
 

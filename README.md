@@ -33,11 +33,9 @@ Pretty self-explanatory. You can influence the playback behaviour with those fun
 
 ### `seek(time, adjust)`
 This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.  
-TODO: Add error handling
 
 ### `setVolume(volume)`
 This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.  
-TODO: Add error handling
 
 ### `cycleRepeat()`
 This function lets you cycle through the repeat modes (0 = no repeat, 1 = song, 2 = playlist).  
@@ -48,7 +46,6 @@ Toggles the shuffle mode on or off. To set the shuffle mode directly, check [`se
 
 ### `setShuffle(enabled)`
 Sets the shuffle mode to the boolean given to `enabled`.  
-TODO: Add error handling
 
 ### `async getLyrics()`
 Returns the lyrics of the current song as a `string` if there are any. You get a nice text block with all lines. **Note:** This could return an empty string when there are no lyrics.
