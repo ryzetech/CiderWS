@@ -122,6 +122,15 @@ class CiderWS {
   }
 
   /**
+   * Forces CiderWS to fetch and update the current song and states
+   */
+  forceUpdate() {
+    this.socket.send(JSON.stringify({
+      action: 'get-currentmediaitem',
+    }));
+  }
+
+  /**
    * Gets the current song
    * @async
    * @returns {Song} The current song
