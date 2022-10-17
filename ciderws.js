@@ -124,6 +124,7 @@ class CiderWS {
    * @returns {Song} The current song
    */
   async getSong() {
+    this.forceUpdate();
     return new Promise(resolve => {
       if (this.currentSong) return resolve(this.currentSong);
       const interval = setInterval(() => {
@@ -140,6 +141,7 @@ class CiderWS {
    * @returns {States} The current states
    */
   async getStates() {
+    this.forceUpdate();
     return new Promise(resolve => {
       if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
@@ -238,6 +240,30 @@ class CiderWS {
   }
 
   /**
+   * Sets the repeat mode
+   * @param {number} mode The repeat mode to set (0 = off, 1 = repeat one, 2 = repeat all)
+   */
+  async setRepeat(mode) {
+    if (typeof (mode) === "undefined") throw new MissingParameterError("value");
+    if (typeof (mode) !== "number" || mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
+    if (mode < 0 || mode > 2) throw new ParameterRangeError("value", 0, 2);
+
+    let from = await this.getStates();
+
+    // WHAT THE FUCK IS THAT
+    if (from.repeatMode == mode) return;
+    else if (from.repeatMode < mode) {
+      for (let i = from.repeatMode; i < mode; i++) {
+        this.cycleRepeat();
+      }
+    } else {
+      for (let i = from.repeatMode; i > mode; i--) {
+        this.cycleRepeat();
+      }
+    }
+  }
+
+  /**
    * Toggles shuffle mode
    * @see {@link setShuffle()} if you want to set shuffle mode to a specific value
    */
@@ -252,7 +278,7 @@ class CiderWS {
    * @param {boolean} enabled Sets whether shuffle mode is enabled or not
    */
   setShuffle(enabled) {
-    if (typeof(enabled) === "undefined") throw new MissingParameterError("enabled");
+    if (typeof (enabled) === "undefined") throw new MissingParameterError("enabled");
 
     this.socket.send(JSON.stringify({
       action: 'set-shuffle',
