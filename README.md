@@ -4,9 +4,8 @@
 
 ![CiderWS Cover](ciderws-repocover.png)
 
-![Current Development Status](https://img.shields.io/badge/Current_Development_Status-MEME_%2F_Barely_working-critical?style=for-the-badge)
+![Current Development Status](https://img.shields.io/badge/Current_Development_Status-Early_Alpha_%2f_getting_somewhere-yellow?style=for-the-badge)
 ![Current Development Status](https://img.shields.io/badge/Publishing_Status-far_from_ready-critical?style=for-the-badge)
-
 
 # About
 Cider [(cider.sh - an open-source client for Apple Music)](https://cider.sh/) has a WebSocket API. Yes, I wouldn't have thought either! But, unlike the REST API, calling it "documentated" would be a blunt lie because documentation... doesn't exist. No worries tho! I had the absolute boredom to do some digging in the JavaScript code for the Web Remote and here we are. I just wrote this as a part of a cool VS Code extension... Oh well...
@@ -25,6 +24,9 @@ This one is easy. You don't even have to call it because it gets called in the c
 ### `close()`
 That closes the websocket connection. You should do that at some point to provite a clean exit.
 
+### `forceUpdate()`
+Forces CiderWS to fetch and update the current song and states. This is not instant tho, so use [`async getSong()`](#async-getsong) and [`async getStates()`](#async-getstates) if you want to be absolutely sure!
+
 ### `async getSong()`
 Returns a Promise, which eventually resolves to a [`Song`](#song) object of the current or last played song. Useful if you don't want to use the event-based system.
 
@@ -41,8 +43,10 @@ This function lets you skip to a time in the current song. `time` is a timestamp
 This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.  
 
 ### `cycleRepeat()`
-This function lets you cycle through the repeat modes (0 = no repeat, 1 = song, 2 = playlist).  
-TODO: Add a function to set the repeat mode directly
+This function lets you cycle through all three repeat modes. To set the repeat mode directly, check [`async setRepeat()`](#async-setrepeat).
+
+### `async setRepeat(mode)`
+Sets the repeat mode directly to the number given to `mode` (0 = no repeat, 1 = song, 2 = playlist).
 
 ### `toggleShuffle()`
 Toggles the shuffle mode on or off. To set the shuffle mode directly, check [`setShuffle()`](#setshuffleenabled).
