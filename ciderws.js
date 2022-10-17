@@ -24,22 +24,7 @@ class CiderWS {
   constructor(host = "localhost", port = 26369) {
     this.host = host;
     this.port = port;
-    this.currentSong = new Song({
-      data: {
-        name: "No Title Found",
-        artist: "",
-        album: "",
-        duration: 0,
-        id: undefined,
-        artwork: {
-          url: "",
-          width: 0,
-          height: 0
-        },
-        url: "",
-        trackNumber: undefined
-      }
-    });
+    this.currentSong;
     this.states;
     this.socket;
     this.connect();
@@ -230,9 +215,8 @@ class CiderWS {
    * @param {number} volume The volume to set, from 0 to 1
    */
   setVolume(volume) {
-    if (!volume) throw new MissingParameterError("volume");
-    volume = parseFloat(volume);
-    if (!volume) throw new ParameterTypeMismatchError("volume", "float");
+    if (typeof (volume) === "undefined") throw new MissingParameterError("volume");
+    if (typeof (volume) != "number") throw new ParameterTypeMismatchError("volume", "float");
     if (volume < 0 || volume > 1) throw new ParameterRangeError("volume", 0, 1);
 
     this.socket.send(JSON.stringify({
