@@ -22,10 +22,10 @@ soon tm
 This one is easy. You don't even have to call it because it gets called in the constructor anyways (the call gets ignored if a connection is already established). If you have closed it with the [`close()`](#close) function, you may want to reopen it. That's why this method exists.
 
 ### `close()`
-That closes the websocket connection. You should do that at some point to provite a clean exit.
+That closes the websocket connection. You should do that at some point to provide a clean exit.
 
 ### `forceUpdate()`
-Forces CiderWS to fetch and update the current song and states. This is not instant tho, so use [`async getSong()`](#async-getsong) and [`async getStates()`](#async-getstates) if you want to be absolutely sure!
+Forces CiderWS to fetch and update the current song and states. This is not instant tho, so use [`async getSong()`](#async-getsong) and [`async getStates()`](#async-getstates) or the event-based system if you want to be absolutely sure!
 
 ### `async getSong()`
 Returns a Promise, which eventually resolves to a [`Song`](#song) object of the current or last played song. Useful if you don't want to use the event-based system.
@@ -38,12 +38,13 @@ Pretty self-explanatory. You can influence the playback behaviour with those fun
 
 ### `seek(time, adjust)`
 This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.  
+**Note:** No idea why I included the adjust parameter, it's in the API so it has to be useful for something.
 
 ### `setVolume(volume)`
 This function accepts a number between 0 and 1 as `volume`. It sets the playback volume of the player.  
 
 ### `cycleRepeat()`
-This function lets you cycle through all three repeat modes. To set the repeat mode directly, check [`async setRepeat()`](#async-setrepeat).
+This function lets you cycle through all three repeat modes. To set the repeat mode directly, check [`async setRepeat()`](#async-setrepeatmode).  
 
 ### `async setRepeat(mode)`
 Sets the repeat mode directly to the number given to `mode` (0 = no repeat, 1 = song, 2 = playlist).
@@ -59,11 +60,11 @@ Returns the lyrics of the current song as a `string` if there are any. You get a
 
 ### `async getLyricsAdvanced()`
 Returns the lyrics as an array of objects with the following properties:
-| Property    | Type   | Usage                                |
-|-------------|--------|--------------------------------------|
-| startTime   | number | Marks the time in seconds where this line is played |
-| endTime     | number | Marks the time in seconds where this line stops |
-| line        | string | The actual lyric line. duh           |
+| Property    | Type   | Usage                                                      |
+|-------------|--------|------------------------------------------------------------|
+| startTime   | number | Marks the time in seconds where this line is played        |
+| endTime     | number | Marks the time in seconds where this line stops            |
+| line        | string | The actual lyric line. duh                                 |
 | translation | string | The translation of the line if chosen in the Cider options |
 
 Example:
@@ -129,24 +130,24 @@ The Song class packs up some nice information about the current playing title.
 
 ### States
 This class saves the current options and states for the player when defined by the client.
-| Property    | Type    | Usage                                |
-|-------------|---------|--------------------------------------|
-| isPlaying   | boolean | Is a title playing?                  |
-| isShuffling | boolean | Is shuffling enabled?                |
+| Property    | Type    | Usage                                                       |
+|-------------|---------|-------------------------------------------------------------|
+| isPlaying   | boolean | Is a title playing?                                         |
+| isShuffling | boolean | Is shuffling enabled?                                       |
 | repeatMode  | number  | Current repeat mode (0 = no repeat, 1 = song, 2 = playlist) |
-| volume      | number  | How loud is the player (from 0 to 1) |
-| autoplay    | boolean | Is autoplay enabled?                 |
+| volume      | number  | How loud is the player (from 0 to 1)?                       |
+| autoplay    | boolean | Is autoplay enabled?                                        |
 
 ### PlaybackData
 This class shows data relevant for the current playback, e.g. elapsed time, remaining time, the timestamp when the song will end, etc.
-| Property      | Type    | Usage                                |
-|---------------|---------|--------------------------------------|
-| isPlaying     | boolean | Is a title playing?                  |
+| Property      | Type    | Usage                                           |
+|---------------|---------|-------------------------------------------------|
+| isPlaying     | boolean | Is a title playing?                             |
 | startTime     | number  | The timestamp at which the song started playing |
-| endTime       | number  | The timestamp at which the song will end |
-| remainingTime | number  | The remaining time in milliseconds   |
-| elapsedTime   | number  | The elapsed time in milliseconds     |
-| progress      | number  | The progress of the song in decimal form (0-1) |
+| endTime       | number  | The timestamp at which the song will end        |
+| remainingTime | number  | The remaining time in milliseconds              |
+| elapsedTime   | number  | The elapsed time in milliseconds                |
+| progress      | number  | The progress of the song in decimal form (0-1)  |
 
 # Disclaimer
 *This project is NOT affiliated with Cider in any way shape or form (yet). The project is open source and free to use. 
