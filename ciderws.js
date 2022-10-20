@@ -420,4 +420,19 @@ class ParameterTypeMismatchError extends Error {
   }
 }
 
+class WebsocketConnectionError extends Error {
+  constructor(status) {
+    switch (status) {
+      case 0:
+        super("Websocket has been created, but has not yet connected");
+      case 2:
+        super("Websocket is closing / has been closed");
+      case 3:
+        super("Websocket has been closed or failed to connect");
+      default:
+        break;
+    }
+  }
+}
+
 module.exports = { CiderWS };
