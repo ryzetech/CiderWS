@@ -124,10 +124,16 @@ class CiderWS {
     evem.removeListener(event, callback);
   }
 
+  off(event, callback) {
+    this.removeListener(event, callback);
+  }
+
   /**
    * Forces CiderWS to fetch and update the current song and states
    */
   forceUpdate() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'get-currentmediaitem',
     }));
@@ -139,7 +145,10 @@ class CiderWS {
    * @returns {Song} The current song
    */
   async getSong() {
+    this.connectionCheck();
+
     this.forceUpdate();
+
     return new Promise(resolve => {
       if (this.currentSong) return resolve(this.currentSong);
       const interval = setInterval(() => {
@@ -156,7 +165,10 @@ class CiderWS {
    * @returns {States} The current states
    */
   async getStates() {
+    this.connectionCheck();
+
     this.forceUpdate();
+    
     return new Promise(resolve => {
       if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
@@ -180,6 +192,8 @@ class CiderWS {
    * Orders the client to play / resume playback
    */
   play() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'play',
     }));
@@ -189,6 +203,8 @@ class CiderWS {
    * Orders the client to pause playback
    */
   pause() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'pause',
     }));
@@ -198,6 +214,8 @@ class CiderWS {
    * Skips to the next song in the queue
    */
   next() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'next',
     }));
@@ -207,6 +225,8 @@ class CiderWS {
    * Returns to the previous song in the queue
    */
   previous() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'previous',
     }));
@@ -218,7 +238,10 @@ class CiderWS {
    * @param {boolean} adjust If true, the time will be accepted in milliseconds
    */
   seek(time, adjust = false) {
-    if (!time) throw new MissingParameterError("time");
+    this.connectionCheck();
+
+    this.paramCheck(time, "time", "number");
+
     if (!parseFloat(time)) throw new ParameterTypeMismatchError("time", "float");
 
     if (adjust) {
@@ -235,9 +258,9 @@ class CiderWS {
    * @param {number} volume The volume to set, from 0 to 1
    */
   setVolume(volume) {
-    if (typeof (volume) === "undefined") throw new MissingParameterError("volume");
-    if (typeof (volume) != "number") throw new ParameterTypeMismatchError("volume", "float");
-    if (volume < 0 || volume > 1) throw new ParameterRangeError("volume", 0, 1);
+    this.connectionCheck();
+
+    this.paramCheck(volume, "volume", "number", 0, 1);
 
     this.socket.send(JSON.stringify({
       type: "setVolume",
@@ -249,6 +272,8 @@ class CiderWS {
    * Cycles through the repeat modes
    */
   cycleRepeat() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'repeat',
     }));
@@ -259,9 +284,10 @@ class CiderWS {
    * @param {number} mode The repeat mode to set (0 = off, 1 = repeat one, 2 = repeat all)
    */
   async setRepeat(mode) {
-    if (typeof (mode) === "undefined") throw new MissingParameterError("value");
+    this.connectionCheck();
+
+    this.paramCheck(mode, "mode", "number", 0, 2);
     if (typeof (mode) !== "number" || mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
-    if (mode < 0 || mode > 2) throw new ParameterRangeError("value", 0, 2);
 
     let from = await this.getStates();
 
@@ -283,6 +309,8 @@ class CiderWS {
    * @see {@link setShuffle()} if you want to set shuffle mode to a specific value
    */
   toggleShuffle() {
+    this.connectionCheck();
+
     this.socket.send(JSON.stringify({
       action: 'shuffle',
     }));
@@ -293,7 +321,9 @@ class CiderWS {
    * @param {boolean} enabled Sets whether shuffle mode is enabled or not
    */
   setShuffle(enabled) {
-    if (typeof (enabled) === "undefined") throw new MissingParameterError("enabled");
+    this.connectionCheck();
+
+    this.paramCheck(enabled, "enabled", "boolean");
 
     this.socket.send(JSON.stringify({
       action: 'set-shuffle',
@@ -311,6 +341,8 @@ class CiderWS {
    * - `translation` - The translation of the lyric text (if available and chosen)
    */
   async getLyricsAdvanced() {
+    this.connectionCheck();
+    
     this.socket.send(JSON.stringify({
       action: 'get-lyrics',
     }));
