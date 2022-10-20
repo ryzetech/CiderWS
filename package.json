@@ -1,5 +1,18 @@
 {
+  "name": "ciderws",
+  "version": "0.1.0",
+  "description": "Control your Cider App via Node.js",
+  "main": "ciderws.js",
   "dependencies": {
     "ws": "^8.8.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryzetech/CiderWS.git"
+  },
+  "author": "ryzetech",
+  "bugs": {
+    "url": "https://github.com/ryzetech/CiderWS/issues"
+  },
+  "homepage": "https://github.com/ryzetech/CiderWS#readme"
 }
