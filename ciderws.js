@@ -30,6 +30,21 @@ class CiderWS {
     this.connect();
   }
 
+  connectionCheck() {
+    if (this.socket.readyState !== 1) throw new WebsocketConnectionError(this.socket.readyState);
+  }
+
+  /**
+   * @private
+   */
+  paramCheck(param, paramLabel, type, rangeStart, rangeEnd) {
+    if (typeof (param) === "undefined") throw new MissingParameterError(paramLabel);
+    if (typeof (param) !== type) throw new ParameterTypeMismatchError(paramLabel, type);
+    if (typeof (rangeStart) !== "undefined" && typeof (rangeEnd) !== "undefined") {
+      if (param <= rangeStart || param >= rangeEnd) throw new ParameterRangeError(paramLabel, rangeStart, rangeEnd);
+    }
+  }
+
   /**
    * @private
    */
