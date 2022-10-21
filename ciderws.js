@@ -179,56 +179,18 @@ class CiderWS {
     });
   }
 
-  /*
-  setAutoplay(value) {
-    this.socket.send(JSON.stringify({
-      type: "setAutoplay",
-      data: value,
-    }));
-  }
-  */
-
   /**
-   * Orders the client to play / resume playback
+   * Sends a playback related command to the client
+   * @param {string} com The command to send ("play", "pause", "next", "previous")
    */
-  play() {
+  command(com) {
     this.connectionCheck();
 
-    this.socket.send(JSON.stringify({
-      action: 'play',
-    }));
-  }
-
-  /**
-   * Orders the client to pause playback
-   */
-  pause() {
-    this.connectionCheck();
+    this.paramCheck(com, "command", "string");
+    if (!["play", "pause", "next", "previous"].includes(com)) throw new Error("You can only use the commands 'play', 'pause', 'next' and 'previous' with command()");
 
     this.socket.send(JSON.stringify({
-      action: 'pause',
-    }));
-  }
-
-  /**
-   * Skips to the next song in the queue
-   */
-  next() {
-    this.connectionCheck();
-
-    this.socket.send(JSON.stringify({
-      action: 'next',
-    }));
-  }
-
-  /**
-   * Returns to the previous song in the queue
-   */
-  previous() {
-    this.connectionCheck();
-
-    this.socket.send(JSON.stringify({
-      action: 'previous',
+      action: com,
     }));
   }
 
