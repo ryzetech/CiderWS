@@ -168,7 +168,7 @@ class CiderWS {
     this.connectionCheck();
 
     this.forceUpdate();
-    
+
     return new Promise(resolve => {
       if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
@@ -181,13 +181,13 @@ class CiderWS {
 
   /**
    * Sends a playback related command to the client
-   * @param {string} com The command to send ("play", "pause", "next", "previous")
+   * @param {string} com The command to send ("play", "pause", "playpause" "next", "previous")
    */
   command(com) {
     this.connectionCheck();
 
     this.paramCheck(com, "command", "string");
-    if (!["play", "pause", "next", "previous"].includes(com)) throw new Error("You can only use the commands 'play', 'pause', 'next' and 'previous' with command()");
+    if (!["play", "pause", "playpause", "next", "previous"].includes(com)) throw new Error("You can only use the commands 'play', 'pause', 'playpause', 'next' and 'previous' with command()");
 
     this.socket.send(JSON.stringify({
       action: com,
@@ -226,7 +226,7 @@ class CiderWS {
 
     this.socket.send(JSON.stringify({
       action: "volume",
-      data: volume,
+      volume: volume,
     }));
   }
 
@@ -253,7 +253,7 @@ class CiderWS {
 
     this.socket.send(JSON.stringify({
       action: "set-repeat",
-      data: mode,
+      repeat: mode,
     }));
   }
 
