@@ -210,7 +210,7 @@ class CiderWS {
       time = parseInt(time / 1000);
     }
     this.socket.send(JSON.stringify({
-      type: "seek",
+      action: "seek",
       data: time,
     }));
   }
@@ -225,7 +225,7 @@ class CiderWS {
     this.paramCheck(volume, "volume", "number", 0, 1);
 
     this.socket.send(JSON.stringify({
-      type: "setVolume",
+      action: "volume",
       data: volume,
     }));
   }
