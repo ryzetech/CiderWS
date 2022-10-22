@@ -219,7 +219,7 @@ class CiderWS {
   /**
    * Skips to a specific time in the current song
    * @param {number} time The time to skip to, in seconds
-   * @param {boolean} adjust If true, the time will be accepted in milliseconds
+   * @param {boolean} [adjust = false] If true, the time will be accepted in milliseconds
    */
   seek(time, adjust = false) {
     this.connectionCheck();
