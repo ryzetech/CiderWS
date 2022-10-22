@@ -33,8 +33,8 @@ Returns a Promise, which eventually resolves to a [`Song`](#song) object of the 
 ### `async getStates()`
 Returns a Promise, which eventually resolves to a [`States`](#states) object of the current or last states. Useful if you don't want to use the event-based system.
 
-### `play()`, `pause()`, `next()`, `previous()`
-Pretty self-explanatory. You can influence the playback behaviour with those functions. They aren't Promise-based so you don't have to wait for shit. They essentially just do websocket calls.
+### `command(com)`
+Pass a string (preferrably `"play", "pause", "next", "previous"`) to `com` to control the player.
 
 ### `seek(time, adjust)`
 This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.  
