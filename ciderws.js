@@ -245,25 +245,16 @@ class CiderWS {
    * Sets the repeat mode
    * @param {number} mode The repeat mode to set (0 = off, 1 = repeat one, 2 = repeat all)
    */
-  async setRepeat(mode) {
+  setRepeat(mode) {
     this.connectionCheck();
 
     this.paramCheck(mode, "mode", "number", 0, 2);
-    if (typeof (mode) !== "number" || mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
+    if (mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
 
-    let from = await this.getStates();
-
-    // WHAT THE FUCK IS THAT
-    if (from.repeatMode == mode) return;
-    else if (from.repeatMode < mode) {
-      for (let i = from.repeatMode; i < mode; i++) {
-        this.cycleRepeat();
-      }
-    } else {
-      for (let i = from.repeatMode; i > mode; i--) {
-        this.cycleRepeat();
-      }
-    }
+    this.socket.send(JSON.stringify({
+      action: "set-repeat",
+      data: mode,
+    }));
   }
 
   /**
@@ -304,7 +295,7 @@ class CiderWS {
    */
   async getLyricsAdvanced() {
     this.connectionCheck();
-    
+
     this.socket.send(JSON.stringify({
       action: 'get-lyrics',
     }));
