@@ -100,7 +100,7 @@ Example:
 ```
 **Note:** This could also return an empty array when there are no lyrics.
 
-### `playById(id, kind = "")`
+### `playById(id, kind = "song")`
 Plays a song / album / artist / playlist / whatever by its ID immediately.
 
 ### `async search(query, type = "song", limit = 10)`
