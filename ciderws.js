@@ -255,6 +255,21 @@ class CiderWS {
   }
 
   /**
+   * Moves the song at the given index to the given position in the queue
+   * @param {number} from 
+   * @param {number} to 
+   */
+  moveQueue(from, to) {
+    this.connectionCheck();
+
+    this.socket.send(JSON.stringify({
+      action: 'queue-move',
+      from: from,
+      to: to,
+    }));
+  }
+
+  /**
    * Sends a playback related command to the client
    * @param {string} com The command to send ("play", "pause", "playpause" "next", "previous")
    */
@@ -302,6 +317,16 @@ class CiderWS {
     this.socket.send(JSON.stringify({
       action: "volume",
       volume: volume,
+    }));
+  }
+
+  mute(enable) {
+    this.connectionCheck();
+
+    this.paramCheck(enable, "enable", "boolean");
+
+    this.socket.send(JSON.stringify({
+      action: enable ? "mute" : "unmute",
     }));
   }
 
@@ -431,6 +456,42 @@ class CiderWS {
   }
 
   /**
+   * Puts a Song next in the queue
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  playNextById(id, kind = "song") {
+    this.connectionCheck();
+
+    this.paramCheck(id, "id", "string");
+    this.paramCheck(kind, "kind", "string");
+
+    this.socket.send(JSON.stringify({
+      action: 'play-next',
+      id: id,
+      type: kind,
+    }));
+  }
+
+  /**
+   * Puts a Song at the end of the queue
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  playLaterById(id, kind = "song") {
+    this.connectionCheck();
+
+    this.paramCheck(id, "id", "string");
+    this.paramCheck(kind, "kind", "string");
+
+    this.socket.send(JSON.stringify({
+      action: 'play-later',
+      id: id,
+      type: kind,
+    }));
+  }
+
+  /**
    * Searches for a song, artist, album or playlist and returns the results
    * @async
    * @param {string} query 
@@ -479,6 +540,28 @@ class CiderWS {
         resolve(d);
       });
     });
+  }
+
+  /**
+   * Searches for an element puts it next in the queue
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async playNext(query, type = "song") {
+    let result = await this.search(query, type, 1);
+    this.playNextById(result[0].id, type);
+  }
+
+  /**
+   * Searches for an element and puts it at the end of the queue
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async playLater(query, type = "song") {
+    let result = await this.search(query, type, 1);
+    this.playLaterById(result[0].id, type);
   }
 
   /**

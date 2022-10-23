@@ -48,6 +48,9 @@ Returns a Promise, which eventually resolves to an Object with the following dat
 }
 ```
 
+### `moveQueue(from, to)`
+Moves the song at the given index `from` to the given position `to` in the queue.
+
 ### `command(com)`
 Pass a string (preferrably `"play", "pause", "next", "previous"`) to `com` to control the player.
 
