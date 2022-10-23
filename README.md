@@ -36,6 +36,18 @@ Returns a Promise, which eventually resolves to a [`Song`](#song) object of the 
 ### `async getStates()`
 Returns a Promise, which eventually resolves to a [`States`](#states) object of the current or last states. Useful if you don't want to use the event-based system.
 
+### `async getQueue()`
+Returns a Promise, which eventually resolves to an Object with the following data:
+```json
+{
+  "items": Song[],
+  "isAutoplay": boolean,
+  "isRestricted": boolean,
+  "position": number,
+  "nextPlayableIndex": number
+}
+```
+
 ### `command(com)`
 Pass a string (preferrably `"play", "pause", "next", "previous"`) to `com` to control the player.
 
@@ -105,6 +117,9 @@ Plays a song / album / artist / playlist / whatever by its ID immediately.
 
 ### `async search(query, type = "song", limit = 10)`
 Searches for a song, artist, album or playlist and returns the results as an array of Objects or Song objects.
+
+### `async quickPlay(query, type = "song")`
+Searches for a song, artist, album or playlist and plays the first result immediately. Essentially, its just serach() and playById() combined. Cool, right? 
 
 ## Events
 Cider bombards every connected websocket with playback data, which CiderWS filters for you.  

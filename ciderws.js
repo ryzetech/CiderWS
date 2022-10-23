@@ -216,6 +216,45 @@ class CiderWS {
   }
 
   /**
+   * Gets the current song queue
+   * @returns {object} The current queue data: ```
+   * {
+   *  items: Song[],
+   *  isAutoplay: boolean,
+   *  isRestricted: boolean,
+   *  position: number,
+   *  nextPlayableIndex: number,
+   * }
+   * ```
+   */
+  async getQueue() {
+    this.connectionCheck();
+
+    this.socket.send(JSON.stringify({
+      action: 'get-queue',
+    }));
+
+    return new Promise(resolve => {
+      evem.once("queue", queue => {
+        queue = queue.data;
+        let response = {
+          items: [],
+          isAutoplay: queue.hasAutoplayStation,
+          isRestricted: queue._isRestricted,
+          position: queue._position,
+          nextPlayableIndex: queue._nextPlayableItemIndex,
+        };
+
+        for (let s of queue._queueItems) {
+          response.items.push(new Song(s.item.attributes));
+        }
+
+        resolve(response);
+      });
+    });
+  }
+
+  /**
    * Sends a playback related command to the client
    * @param {string} com The command to send ("play", "pause", "playpause" "next", "previous")
    */
@@ -440,6 +479,16 @@ class CiderWS {
         resolve(d);
       });
     });
+  }
+
+  /**
+   * Searches for an element and plays it immediately
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  quickPlay(query, type = "song") {
+    let result = this.search(query, type, 1);
+    this.playById(result[0].id, type);
   }
 }
 
