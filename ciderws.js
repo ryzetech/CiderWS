@@ -483,11 +483,12 @@ class CiderWS {
 
   /**
    * Searches for an element and plays it immediately
+   * @async
    * @param {string} query The query to search for
    * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
    */
-  quickPlay(query, type = "song") {
-    let result = this.search(query, type, 1);
+  async quickPlay(query, type = "song") {
+    let result = await this.search(query, type, 1);
     this.playById(result[0].id, type);
   }
 }
