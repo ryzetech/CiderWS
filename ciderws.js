@@ -75,6 +75,12 @@ class CiderWS {
         newSong = undefined;
         newStat = undefined;
         break;
+      case "generic":
+        if (d.message === "Thanks for identifying!") {
+          evem.emit("ready");
+        } else if (d.message === "Action not found") {
+          console.error("[CiderWS] Action not found!");
+        }
     }
   }
 
@@ -85,8 +91,16 @@ class CiderWS {
     if (!this.socket || this.socket.readyState == 3) {
       this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
 
-      this.socket.onopen = (event) => { evem.emit("connectionOpen", event); };
-      this.socket.onclose = (event) => { evem.emit("connectionClose"), event; };
+      this.socket.onopen = () => {
+        this.socket.send(JSON.stringify({
+          action: "identify",
+          name: "CiderWS",
+          author: "ryzetech",
+          description: "A NodeJS WebSocket client for Cider",
+          version: "pre-alpha",
+        }));
+      };
+      this.socket.onclose = (event) => { evem.emit("close"), event; };
       this.socket.onmessage = (event) => { this.handleMessage(event); };
     }
   }

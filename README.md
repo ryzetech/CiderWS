@@ -108,7 +108,7 @@ Searches for a song, artist, album or playlist and returns the results as an arr
 
 ## Events
 Cider bombards every connected websocket with playback data, which CiderWS filters for you.  
-The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `connectionOpen` and `connectionClose`. You get some data with them, too!
+The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `ready` and `close`. You get some data with them, too!
 - `songUpdate` = = => [`Song`](#song) object
 - `statesUpdate` = => [`States`](#states) object
 - `playbackUpdate` => [`PlaybackData`](#playbackdata) object
