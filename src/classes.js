@@ -31,7 +31,12 @@
       this.url = data.url;
     }
 
-    this.id = data.songId ? data.songId : new RegExp("i=[0-9]+").exec(this.url)[0].replace("i=", "");
+    if (!data.songId) {
+      if (typeof (data.url) === "string") this.id = new RegExp("i=[0-9]+").exec(this.url)[0].replace("i=", "");
+      else this.id = "";
+    }
+    else this.id = data.songId;
+
     this.duration = data.durationInMillis;
     this.genre = data.genreNames;
     // this.playbackdata = new PlaybackData(data);

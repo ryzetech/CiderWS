@@ -5,8 +5,8 @@ class MissingParameterError extends Error {
 }
 
 class ParameterRangeError extends Error {
-  constructor(arg, min, max) {
-    super(`Parameter "${arg}" must be between ${min} and ${max}`);
+  constructor(is, label, min, max) {
+    super(`Parameter "${label}" must be between ${min} and ${max} (is ${is})`);
   }
 }
 
