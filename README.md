@@ -24,6 +24,9 @@ This one is easy. You don't even have to call it because it gets called in the c
 ### `close()`
 That closes the websocket connection. You should do that at some point to provide a clean exit.
 
+### `quit()`
+Not only closes your connection, but quits the Cider client entirely! Like, actually ends the process! No idea why you would have this but here you go!
+
 ### `forceUpdate()`
 Forces CiderWS to fetch and update the current song and states. This is not instant tho, so use [`async getSong()`](#async-getsong) and [`async getStates()`](#async-getstates) or the event-based system if you want to be absolutely sure!
 
@@ -33,10 +36,25 @@ Returns a Promise, which eventually resolves to a [`Song`](#song) object of the 
 ### `async getStates()`
 Returns a Promise, which eventually resolves to a [`States`](#states) object of the current or last states. Useful if you don't want to use the event-based system.
 
-### `play()`, `pause()`, `next()`, `previous()`
-Pretty self-explanatory. You can influence the playback behaviour with those functions. They aren't Promise-based so you don't have to wait for shit. They essentially just do websocket calls.
+### `async getQueue()`
+Returns a Promise, which eventually resolves to an Object with the following data:
+```json
+{
+  "items": Song[],
+  "isAutoplay": boolean,
+  "isRestricted": boolean,
+  "position": number,
+  "nextPlayableIndex": number
+}
+```
 
-### `seek(time, adjust)`
+### `moveQueue(from, to)`
+Moves the song at the given index `from` to the given position `to` in the queue.
+
+### `command(com)`
+Pass a string (preferrably `"play", "pause", "next", "previous"`) to `com` to control the player.
+
+### `seek(time, adjust = false)`
 This function lets you skip to a time in the current song. `time` is a timestamp in seconds. If `adjust` is true, `time` has to be passed in milliseconds.  
 **Note:** No idea why I included the adjust parameter, it's in the API so it has to be useful for something.
 
@@ -54,6 +72,9 @@ Toggles the shuffle mode on or off. To set the shuffle mode directly, check [`se
 
 ### `setShuffle(enabled)`
 Sets the shuffle mode to the boolean given to `enabled`.  
+
+### `setAutoplay(enabled)`
+Sets the autoplay mode to the boolean given to `enabled`.  
 
 ### `async getLyrics()`
 Returns the lyrics of the current song as a `string` if there are any. You get a nice text block with all lines. **Note:** This could return an empty string when there are no lyrics.
@@ -94,10 +115,18 @@ Example:
 ```
 **Note:** This could also return an empty array when there are no lyrics.
 
+### `playById(id, kind = "song")`
+Plays a song / album / artist / playlist / whatever by its ID immediately.
+
+### `async search(query, type = "song", limit = 10)`
+Searches for a song, artist, album or playlist and returns the results as an array of Objects or Song objects.
+
+### `async quickPlay(query, type = "song")`
+Searches for a song, artist, album or playlist and plays the first result immediately. Essentially, its just serach() and playById() combined. Cool, right? 
 
 ## Events
 Cider bombards every connected websocket with playback data, which CiderWS filters for you.  
-The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `connectionOpen` and `connectionClose`. You get some data with them, too!
+The three main events are `songUpdate`, `statesUpdate` and `playbackUpdate` and two related to websocket stuff, `ready` and `close`. You get some data with them, too!
 - `songUpdate` = = => [`Song`](#song) object
 - `statesUpdate` = => [`States`](#states) object
 - `playbackUpdate` => [`PlaybackData`](#playbackdata) object
