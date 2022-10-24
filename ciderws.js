@@ -4,6 +4,19 @@ const WebSocket = require('ws');
 const events = require('events');
 const evem = new events.EventEmitter();
 
+const {
+  Song,
+  States,
+  PlaybackData
+} = require("./src/classes.js");
+
+const {
+  MissingParameterError,
+  ParameterRangeError,
+  ParameterTypeMismatchError,
+  WebsocketConnectionError
+} = require("./src/errors.js");
+
 /**
  * CiderWS - A simple WebSocket client for Cider
  * 
@@ -41,7 +54,7 @@ class CiderWS {
     if (typeof (param) === "undefined") throw new MissingParameterError(paramLabel);
     if (typeof (param) !== type) throw new ParameterTypeMismatchError(paramLabel, type);
     if (typeof (rangeStart) !== "undefined" && typeof (rangeEnd) !== "undefined") {
-      if (param <= rangeStart || param >= rangeEnd) throw new ParameterRangeError(paramLabel, rangeStart, rangeEnd);
+      if (!(param <= rangeStart || param >= rangeEnd)) throw new ParameterRangeError(param, paramLabel, rangeStart, rangeEnd);
     }
   }
 
@@ -72,6 +85,12 @@ class CiderWS {
         newSong = undefined;
         newStat = undefined;
         break;
+      case "generic":
+        if (d.message === "Thanks for identifying!") {
+          evem.emit("ready");
+        } else if (d.message === "Action not found") {
+          console.error("[CiderWS] Action not found!");
+        }
     }
   }
 
@@ -82,8 +101,16 @@ class CiderWS {
     if (!this.socket || this.socket.readyState == 3) {
       this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
 
-      this.socket.onopen = (event) => { evem.emit("connectionOpen", event); };
-      this.socket.onclose = (event) => { evem.emit("connectionClose"), event; };
+      this.socket.onopen = () => {
+        this.socket.send(JSON.stringify({
+          action: "identify",
+          name: "CiderWS",
+          author: "ryzetech",
+          description: "A NodeJS WebSocket client for Cider",
+          version: "pre-alpha",
+        }));
+      };
+      this.socket.onclose = (event) => { evem.emit("close"), event; };
       this.socket.onmessage = (event) => { this.handleMessage(event); };
     }
   }
@@ -96,37 +123,95 @@ class CiderWS {
   }
 
   /**
-   * Adds a listener to the event emitter.
+   * **NOT TO BE CONFUSED WITH close()!!!**  
+   * Doesn't only stop playback, but also closes the Cider instance! Y'know, just in case.
+   * Note that reconnecting to is not possible after this, unless you restart Cider.
+   */
+  quit() {
+    this.connectionCheck();
+
+    this.socket.send(JSON.stringify({
+      action: 'quit',
+    }));
+  }
+
+  /**
+   * Adds a listener to the event emitter.  
    * The listener can be called multiple times, for each event emitted.
    * @param {string} event 
-   * @param {} callback 
+   * @param {function} callback 
    */
   on(event, callback) {
     evem.on(event, callback);
   }
 
   /**
-   * Adds a listener to the event emitter.
+   * Adds a listener to the event emitter.  
    * The listener can only be called once, the first time an event is emitted.
    * @param {string} event 
-   * @param {} callback 
+   * @param {function} callback 
    */
   once(event, callback) {
     evem.once(event, callback);
   }
 
   /**
-   * Will remove one instance of the listener from the listener array for the event named event.
+   * Will remove one instance of the listener from the listener array for the event named `event`.
    * @param {string} event 
-   * @param {} callback 
+   * @param {function} callback 
    */
   removeListener(event, callback) {
     evem.removeListener(event, callback);
   }
 
+  /**
+   * Alias for removeListener()
+   * @see {@link removeListener()}
+   * @param {string} event 
+   * @param {function} callback 
+   */
   off(event, callback) {
     this.removeListener(event, callback);
   }
+
+  /**
+   * Removes all listeners, or those specified with `event`.  
+   * 
+   * **DO NOT DO THIS! NEVER!**  
+   * IT IS BAD PRACTICE AND I'VE INCLUDED IT JUST SO YOU HAVE THE POSSIBILITY!  
+   * I EXPECT YOU TO BE RESPONSIBLE WITH THIS METHOD!
+   * @param {string=} event 
+   */
+  removeAllListeners(event) {
+    evem.removeAllListeners(event);
+  }
+
+  /**
+   * Returns an array listing the events for which the emitter has registered listeners. The values in the array are strings or `Symbol`s.
+   * @returns {(string | symbol)[]} List of events for which listeners are registered
+   */
+  eventNames() {
+    return evem.eventNames();
+  }
+
+  /**
+   * Returns the number of listeners listening to the event named `event`.
+   * @param {string} event 
+   * @returns {number}
+   */
+  listenerCount(event) {
+    return evem.listenerCount(event);
+  }
+
+  /**
+   * Returns a copy of the array of listeners for the event named `event`.
+   * @param {(string | symbol)} event 
+   * @returns {function[]}
+   */
+  listeners(event) {
+    return evem.listeners(event);
+  }
+
 
   /**
    * Forces CiderWS to fetch and update the current song and states
@@ -168,7 +253,7 @@ class CiderWS {
     this.connectionCheck();
 
     this.forceUpdate();
-    
+
     return new Promise(resolve => {
       if (this.states) return resolve(this.states);
       const interval = setInterval(() => {
@@ -179,63 +264,79 @@ class CiderWS {
     });
   }
 
-  /*
-  setAutoplay(value) {
-    this.socket.send(JSON.stringify({
-      type: "setAutoplay",
-      data: value,
-    }));
-  }
-  */
-
   /**
-   * Orders the client to play / resume playback
+   * Gets the current song queue
+   * @returns {object} The current queue data: ```
+   * {
+   *  items: Song[],
+   *  isAutoplay: boolean,
+   *  isRestricted: boolean,
+   *  position: number,
+   *  nextPlayableIndex: number,
+   * }
+   * ```
    */
-  play() {
+  async getQueue() {
     this.connectionCheck();
 
     this.socket.send(JSON.stringify({
-      action: 'play',
+      action: 'get-queue',
+    }));
+
+    return new Promise(resolve => {
+      evem.once("queue", queue => {
+        queue = queue.data;
+        let response = {
+          items: [],
+          isAutoplay: queue.hasAutoplayStation,
+          isRestricted: queue._isRestricted,
+          position: queue._position,
+          nextPlayableIndex: queue._nextPlayableItemIndex,
+        };
+
+        for (let s of queue._queueItems) {
+          response.items.push(new Song(s.item.attributes));
+        }
+
+        resolve(response);
+      });
+    });
+  }
+
+  /**
+   * Moves the song at the given index to the given position in the queue
+   * @param {number} from 
+   * @param {number} to 
+   */
+  moveQueue(from, to) {
+    this.connectionCheck();
+
+    this.socket.send(JSON.stringify({
+      action: 'queue-move',
+      from: from,
+      to: to,
     }));
   }
 
   /**
-   * Orders the client to pause playback
+   * Sends a playback related command to the client
+   * @param {string} com The command to send ("play", "pause", "playpause" "next", "previous")
    */
-  pause() {
+  command(com) {
     this.connectionCheck();
 
-    this.socket.send(JSON.stringify({
-      action: 'pause',
-    }));
-  }
-
-  /**
-   * Skips to the next song in the queue
-   */
-  next() {
-    this.connectionCheck();
+    this.paramCheck(com, "command", "string");
+    if (!["play", "pause", "playpause", "next", "previous"].includes(com)) throw new Error("You can only use the commands 'play', 'pause', 'playpause', 'next' and 'previous' with command()");
 
     this.socket.send(JSON.stringify({
-      action: 'next',
-    }));
-  }
-
-  /**
-   * Returns to the previous song in the queue
-   */
-  previous() {
-    this.connectionCheck();
-
-    this.socket.send(JSON.stringify({
-      action: 'previous',
+      action: com,
     }));
   }
 
   /**
    * Skips to a specific time in the current song
    * @param {number} time The time to skip to, in seconds
-   * @param {boolean} adjust If true, the time will be accepted in milliseconds
+   * @param {boolean} [adjust = false] If true, the time will be accepted in milliseconds
    */
   seek(time, adjust = false) {
     this.connectionCheck();
@@ -248,7 +349,7 @@ class CiderWS {
       time = parseInt(time / 1000);
     }
     this.socket.send(JSON.stringify({
-      type: "seek",
+      action: "seek",
       data: time,
     }));
   }
@@ -263,8 +364,18 @@ class CiderWS {
     this.paramCheck(volume, "volume", "number", 0, 1);
 
     this.socket.send(JSON.stringify({
-      type: "setVolume",
-      data: volume,
+      action: "volume",
+      volume: volume,
+    }));
+  }
+
+  mute(enable) {
+    this.connectionCheck();
+
+    this.paramCheck(enable, "enable", "boolean");
+
+    this.socket.send(JSON.stringify({
+      action: enable ? "mute" : "unmute",
     }));
   }
 
@@ -283,25 +394,16 @@ class CiderWS {
    * Sets the repeat mode
    * @param {number} mode The repeat mode to set (0 = off, 1 = repeat one, 2 = repeat all)
    */
-  async setRepeat(mode) {
+  setRepeat(mode) {
     this.connectionCheck();
 
     this.paramCheck(mode, "mode", "number", 0, 2);
-    if (typeof (mode) !== "number" || mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
+    if (mode % 1 !== 0) throw new ParameterTypeMismatchError("value", "whole number");
 
-    let from = await this.getStates();
-
-    // WHAT THE FUCK IS THAT
-    if (from.repeatMode == mode) return;
-    else if (from.repeatMode < mode) {
-      for (let i = from.repeatMode; i < mode; i++) {
-        this.cycleRepeat();
-      }
-    } else {
-      for (let i = from.repeatMode; i > mode; i--) {
-        this.cycleRepeat();
-      }
-    }
+    this.socket.send(JSON.stringify({
+      action: "set-repeat",
+      repeat: mode,
+    }));
   }
 
   /**
@@ -332,9 +434,24 @@ class CiderWS {
   }
 
   /**
+   * Sets the autoplay mode
+   * @param {boolean} enabled 
+   */
+  setAutoplay(enabled) {
+    this.connectionCheck();
+
+    this.paramCheck(enabled, "enabled", "boolean");
+
+    this.socket.send(JSON.stringify({
+      action: "set-autoplay",
+      autoplay: enabled,
+    }));
+  }
+
+  /**
    * Gets the lyrics for the current song (if available)
    * @async
-   * @returns {Array} An Array of Objects with lyrics for the current song with the following properties:
+   * @returns {object[]} An Array of Objects with lyrics for the current song with the following properties:
    * - `startTime` - The time at which the lyric should be displayed, in seconds
    * - `endTime` - The time at which the lyric should be hidden, in seconds
    * - `line` - The lyric text
@@ -342,7 +459,7 @@ class CiderWS {
    */
   async getLyricsAdvanced() {
     this.connectionCheck();
-    
+
     this.socket.send(JSON.stringify({
       action: 'get-lyrics',
     }));
@@ -368,117 +485,143 @@ class CiderWS {
     }
     return full;
   }
-}
 
-/**
- * This class defines the most important properties of a song.
- * It generates a new song object from a playbackStateUpdate event.
- * 
- * @class Song
- * @param {Object} data The data from the websocket
- * 
- * @var {string} id The song ID
- * @var {string} title The song name
- * @var {string} artist The song artist
- * @var {string} album The song album
- * @var {string} artwork The song's album art URL
- * @var {number} trackNumber The song's track number on the album
- * @var {number} duration The song duration in seconds
- * @var {string} url The Apple Music URL for the song
- */
-class Song {
-  constructor(data) {
-    data = data.data;
-    this.title = data.name;
-    this.artist = data.artistName;
-    this.album = data.albumName;
-    this.artwork = data.artwork.url.replace("{w}", data.artwork.width).replace("{h}", data.artwork.height);
-    this.trackNumber = data.trackNumber;
-    this.url = data.url ? data.url.appleMusic : "";
-    this.id = data.songId;
-    this.duration = data.durationInMillis;
-    // this.playbackdata = new PlaybackData(data);
+  /**
+   * Plays a Song by its ID immediately
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  playById(id, kind = "song") {
+    this.connectionCheck();
+
+    this.paramCheck(id, "id", "string");
+    this.paramCheck(kind, "kind", "string");
+
+    this.socket.send(JSON.stringify({
+      action: 'play-mediaitem',
+      id: id,
+      kind: kind,
+    }));
   }
-}
 
-/**
- * This class saves the current options and states for the player when defined by the client.
- * 
- * @class States
- * @param {Object} data The data from the websocket
- * 
- * @var {boolean} isPlaying Whether the player is playing or not
- * @var {boolean} isShuffling Whether the player is shuffling or not
- * @var {number} repeatMode The repeat mode of the player (0 = off, 1 = song, 2 = queue)
- * @var {number} volume The volume of the player (0-1)
- * @var {boolean} autoplay Whether autoplay is enabled or not
- */
-class States {
-  constructor(data) {
-    data = data.data;
-    this.isPlaying = data.status;
-    this.isShuffling = data.shuffleMode == 1;
-    this.repeatMode = data.repeatMode;
-    this.volume = data.volume;
-    this.autoplay = data.autoplayEnabled;
+  /**
+   * Puts a Song next in the queue
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  playNextById(id, kind = "song") {
+    this.connectionCheck();
+
+    this.paramCheck(id, "id", "string");
+    this.paramCheck(kind, "kind", "string");
+
+    this.socket.send(JSON.stringify({
+      action: 'play-next',
+      id: id,
+      type: kind,
+    }));
   }
-}
 
-/**
- * This class shows data relevant for the current playback, e.g. elapsed time, remaining time, when the song will end, etc.
- * 
- * @class PlaybackData
- * @param {Object} data The data from the websocket
- * 
- * @var {boolean} isPlaying Whether the player is playing or not
- * @var {number} startTime The timestamp at which the song started playing
- * @var {number} endTime The timestamp at which the song will end
- * @var {number} remainingTime The remaining time in milliseconds
- * @var {number} elapsedTime The elapsed time in milliseconds
- * @var {number} progress The progress of the song in decimal form (0-1)
- */
-class PlaybackData {
-  constructor(data) {
-    data = data.data;
-    this.isPlaying = data.status;
-    this.startTime = data.startTime;
-    this.endTime = data.endTime;
-    this.remainingTime = Math.round(data.remainingTime);
-    this.elapsedTime = Math.round(data.durationInMillis - data.remainingTime);
-    this.progress = data.currentPlaybackProgress;
+  /**
+   * Puts a Song at the end of the queue
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  playLaterById(id, kind = "song") {
+    this.connectionCheck();
+
+    this.paramCheck(id, "id", "string");
+    this.paramCheck(kind, "kind", "string");
+
+    this.socket.send(JSON.stringify({
+      action: 'play-later',
+      id: id,
+      type: kind,
+    }));
   }
-}
 
-class MissingParameterError extends Error {
-  constructor(arg) {
-    super(`Missing parameter(s): ${arg}`);
+  /**
+   * Searches for a song, artist, album or playlist and returns the results
+   * @async
+   * @param {string} query 
+   * @param {string} [type = "song"]
+   * @param {number} [limit = 10]
+   * @returns {Song[] | object[]} An array of (Song) objects
+   */
+  async search(query, type = "song", limit = 10) {
+    this.connectionCheck();
+
+    this.paramCheck(query, "query", "string");
+    this.paramCheck(type, "type", "string");
+
+    this.paramCheck(limit, "limit", "number", 1, 50);
+
+    this.socket.send(JSON.stringify({
+      action: 'search',
+      term: query,
+      limit: limit,
+    }));
+
+    return new Promise(resolve => {
+      evem.once("searchResults", (data) => {
+        let d = data.data;
+
+        switch (type) {
+          case "song":
+            d = d.songs.data;
+            let songs = [];
+            for (let s of d) {
+              songs.push(new Song(s.attributes));
+            }
+            resolve(songs);
+            break;
+          case "playlist":
+            d = d.playlists.data;
+            break;
+          case "album":
+            d = d.albums.data;
+            break;
+          case "artist":
+            d = d.artists.data;
+            break;
+        }
+
+        resolve(d);
+      });
+    });
   }
-}
 
-class ParameterRangeError extends Error {
-  constructor(arg, min, max) {
-    super(`Parameter "${arg}" must be between ${min} and ${max}`);
+  /**
+   * Searches for an element puts it next in the queue
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async playNext(query, type = "song") {
+    let result = await this.search(query, type, 1);
+    this.playNextById(result[0].id, type);
   }
-}
 
-class ParameterTypeMismatchError extends Error {
-  constructor(arg, type) {
-    super(`Invalid parameter(s): ${arg} (expected ${type})`);
+  /**
+   * Searches for an element and puts it at the end of the queue
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async playLater(query, type = "song") {
+    let result = await this.search(query, type, 1);
+    this.playLaterById(result[0].id, type);
   }
-}
 
-class WebsocketConnectionError extends Error {
-  constructor(status) {
-    switch (status) {
-      case 0:
-        super("Websocket has been created, but has not yet connected");
-      case 2:
-        super("Websocket is closing / has been closed");
-      case 3:
-        super("Websocket has been closed or failed to connect");
-      default:
-        break;
-    }
+  /**
+   * Searches for an element and plays it immediately
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async quickPlay(query, type = "song") {
+    let result = await this.search(query, type, 1);
+    this.playById(result[0].id, type);
   }
 }
 
