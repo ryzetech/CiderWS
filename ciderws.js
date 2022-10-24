@@ -523,7 +523,7 @@ class CiderWS {
   }
 
   /**
-   * Puts a Song at the end of the queue
+   * Alias for {@link enqueueById}
    * @param {string} id The ID of the element to be played
    * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
    */
@@ -538,6 +538,15 @@ class CiderWS {
       id: id,
       type: kind,
     }));
+  }
+
+  /**
+   * Puts a Song at the end of the queue.
+   * @param {string} id The ID of the element to be played
+   * @param {string} [kind = "song"] The type of the element to be played (defaults to song)
+   */
+  enqueueById(id, kind = "song") {
+    this.playLaterById(id, kind);
   }
 
   /**
@@ -603,7 +612,7 @@ class CiderWS {
   }
 
   /**
-   * Searches for an element and puts it at the end of the queue
+   * Alias for {@link enqueue}
    * @async
    * @param {string} query The query to search for
    * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
@@ -611,6 +620,16 @@ class CiderWS {
   async playLater(query, type = "song") {
     let result = await this.search(query, type, 1);
     this.playLaterById(result[0].id, type);
+  }
+
+  /**
+   * Searches for an element and puts it at the end of the queue.
+   * @async
+   * @param {string} query The query to search for
+   * @param {string} [type = "song"] The type of the query (song, playlist, album, artist)
+   */
+  async enqueue(query, type = "song") {
+    await this.playLater(query, type);
   }
 
   /**
