@@ -4,8 +4,18 @@ const WebSocket = require('ws');
 const events = require('events');
 const evem = new events.EventEmitter();
 
-const { Song, States, PlaybackData } = require("./src/classes.js");
-const { MissingParameterError, ParameterRangeError, ParameterTypeMismatchError, WebsocketConnectionError } = require("./src/errors.js");
+const {
+  Song,
+  States,
+  PlaybackData
+} = require("./src/classes.js");
+
+const {
+  MissingParameterError,
+  ParameterRangeError,
+  ParameterTypeMismatchError,
+  WebsocketConnectionError
+} = require("./src/errors.js");
 
 /**
  * CiderWS - A simple WebSocket client for Cider
@@ -113,7 +123,7 @@ class CiderWS {
   }
 
   /**
-   * NOT TO BE CONFUSED WITH close()!!!  
+   * **NOT TO BE CONFUSED WITH close()!!!**  
    * Doesn't only stop playback, but also closes the Cider instance! Y'know, just in case.
    * Note that reconnecting to is not possible after this, unless you restart Cider.
    */
@@ -126,27 +136,27 @@ class CiderWS {
   }
 
   /**
-   * Adds a listener to the event emitter.
+   * Adds a listener to the event emitter.  
    * The listener can be called multiple times, for each event emitted.
    * @param {string} event 
-   * @param {} callback 
+   * @param {function} callback 
    */
   on(event, callback) {
     evem.on(event, callback);
   }
 
   /**
-   * Adds a listener to the event emitter.
+   * Adds a listener to the event emitter.  
    * The listener can only be called once, the first time an event is emitted.
    * @param {string} event 
-   * @param {} callback 
+   * @param {function} callback 
    */
   once(event, callback) {
     evem.once(event, callback);
   }
 
   /**
-   * Will remove one instance of the listener from the listener array for the event named event.
+   * Will remove one instance of the listener from the listener array for the event named `event`.
    * @param {string} event 
    * @param {function} callback 
    */
@@ -163,6 +173,45 @@ class CiderWS {
   off(event, callback) {
     this.removeListener(event, callback);
   }
+
+  /**
+   * Removes all listeners, or those specified with `event`.  
+   * 
+   * **DO NOT DO THIS! NEVER!**  
+   * IT IS BAD PRACTICE AND I'VE INCLUDED IT JUST SO YOU HAVE THE POSSIBILITY!  
+   * I EXPECT YOU TO BE RESPONSIBLE WITH THIS METHOD!
+   * @param {string=} event 
+   */
+  removeAllListeners(event) {
+    evem.removeAllListeners(event);
+  }
+
+  /**
+   * Returns an array listing the events for which the emitter has registered listeners. The values in the array are strings or `Symbol`s.
+   * @returns {(string | symbol)[]} List of events for which listeners are registered
+   */
+  eventNames() {
+    return evem.eventNames();
+  }
+
+  /**
+   * Returns the number of listeners listening to the event named `event`.
+   * @param {string} event 
+   * @returns {number}
+   */
+  listenerCount(event) {
+    return evem.listenerCount(event);
+  }
+
+  /**
+   * Returns a copy of the array of listeners for the event named `event`.
+   * @param {(string | symbol)} event 
+   * @returns {function[]}
+   */
+  listeners(event) {
+    return evem.listeners(event);
+  }
+
 
   /**
    * Forces CiderWS to fetch and update the current song and states
