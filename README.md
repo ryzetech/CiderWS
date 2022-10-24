@@ -115,14 +115,26 @@ Example:
 ```
 **Note:** This could also return an empty array when there are no lyrics.
 
-### `playById(id, kind = "song")`
-Plays a song / album / artist / playlist / whatever by its ID immediately.
-
 ### `async search(query, type = "song", limit = 10)`
 Searches for a song, artist, album or playlist and returns the results as an array of Objects or Song objects.
 
+### `playById(id, kind = "song")`
+Plays a song / album / artist / playlist / whatever by its ID immediately.
+
+### `playNextById(id, kind = "song")`
+Puts a Song next in the queue so it will play after the current song ends. If there is no song playing, it will be "loaded" but not played.
+
+### `enqueueById(id, kind = "song")`
+Puts a Song at the end of the queue. There is also an alias: `playLaterById()`. It just doesn't sound good...
+
 ### `async quickPlay(query, type = "song")`
-Searches for a song, artist, album or playlist and plays the first result immediately. Essentially, its just serach() and playById() combined. Cool, right? 
+Searches for a song, artist, album or playlist and plays the first result immediately.
+
+### `async playNext(query, type = "song")`
+Searches for an element and puts next in the queue so it will play after the current song ends. If there is no song playing, it will be "loaded" but not played.
+
+### `async enqueue(query, type = "song")`
+Searches for an element and puts it at the end of the queue. There is also an alias: `playLater()`.
 
 ## Events
 Cider bombards every connected websocket with playback data, which CiderWS filters for you.  
