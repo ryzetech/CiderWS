@@ -4,6 +4,7 @@
   "description": "Control your Cider App via Node.js",
   "main": "ciderws.js",
   "dependencies": {
+    "node-data-validator": "^1.1.3",
     "ws": "^8.8.0"
   },
   "repository": {

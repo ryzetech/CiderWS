@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+node-data-validator@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/node-data-validator/-/node-data-validator-1.1.3.tgz#aea152d8926475c093262aff17586ff9b7012a86"
+  integrity sha512-zWG6ZbX+rET6FckKLRXy+uQhxOIxIQxiEt1IX7wgAY307lqGbSzFBgPuQvswHRl8rBSlr5O0YuwpUjMr76Im/g==
+
 ws@^8.8.0:
   version "8.8.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.8.0.tgz#8e71c75e2f6348dbf8d78005107297056cb77769"
