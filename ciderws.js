@@ -54,7 +54,7 @@ class CiderWS {
     if (typeof (param) === "undefined") throw new MissingParameterError(paramLabel);
     if (typeof (param) !== type) throw new ParameterTypeMismatchError(paramLabel, type);
     if (typeof (rangeStart) !== "undefined" && typeof (rangeEnd) !== "undefined") {
-      if (!(param <= rangeStart || param >= rangeEnd)) throw new ParameterRangeError(param, paramLabel, rangeStart, rangeEnd);
+      if (!(param >= rangeStart && param <= rangeEnd)) throw new ParameterRangeError(paramLabel, rangeStart, rangeEnd);
     }
   }
 
